@@ -8,26 +8,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Adicionar Cursos
         $nome = $_POST['nome'];
         $carga_horaria = $_POST['carga_horaria'];
-        $stmt = $pdo->prepare("INSERT INTO cursos (nome,carga_horaria) VALUES (?)");
-        $stmt->execute([$nome,$carga_horaria]);
+        $data_cadastro = date('Y-m-d');
+        $hora_cadastro = date('H:m:s');
+        $stmt = $pdo->prepare("INSERT INTO cursos (curso_nome,curso_carga_horaria,curso_data_cadastro,curso_hora_cadastro) VALUES (?,?,?,?)");
+        $stmt->execute([$nome,$carga_horaria,$data_cadastro,$hora_cadastro]);
+        header('Location: cursos.php');
     } elseif (isset($_POST['edit'])) {
         // Editar Cursos
         $id = $_POST['id'];
         $nome = $_POST['nome'];
         $carga_horaria = $_POST['carga_horaria'];
-        $stmt = $pdo->prepare("UPDATE cursos SET nome = ?,carga_horaria = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE cursos SET curso_nome = ?,curso_carga_horaria = ? WHERE curso_id = ?");
         $stmt->execute([$nome, $carga_horaria, $id]);
+        header('Location: cursos.php');
     } elseif (isset($_POST['delete'])) {
         // Excluir Cursos
         $id = $_POST['id'];
-        $softdelete = $_POST['softdelete'];
-        $stmt = $pdo->prepare("UPDATE cursos SET softdelete = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE cursos SET curso_status = ? WHERE curso_id = ?");
         $stmt->execute([$id]);
+        header('Location: cursos.php');
     }
 }
 
 // Buscar todos os cursos
-$cursos = $pdo->query("SELECT * FROM cursos")->fetchAll(PDO::FETCH_ASSOC);
+$cursos = $pdo->query("SELECT * FROM cursos WHERE curso_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <h2>Cursos</h2>
@@ -44,17 +48,17 @@ $cursos = $pdo->query("SELECT * FROM cursos")->fetchAll(PDO::FETCH_ASSOC);
     <tbody>
         <?php foreach ($cursos as $curso): ?>
         <tr>
-            <td><?= htmlspecialchars($curso['id']) ?></td>
-            <td><?= htmlspecialchars($curso['nome']) ?></td>
-            <td><?= htmlspecialchars($curso['carga_horaria']) ?></td>
+            <td><?= htmlspecialchars($curso['curso_id']) ?></td>
+            <td><?= htmlspecialchars($curso['curso_nome']) ?></td>
+            <td><?= htmlspecialchars($curso['curso_carga_horaria']) ?></td>
             <td>
-                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editCursoModal<?= $curso['id'] ?>">Editar</button>
-                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteCursoModal<?= $curso['id'] ?>">Excluir</button>
+                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editCursoModal<?= $curso['curso_id'] ?>">Editar</button>
+                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteCursoModal<?= $curso['curso_id'] ?>">Desativar</button>
             </td>
         </tr>
 
         <!-- Modal Editar Curso -->
-        <div class="modal fade" id="editCursoModal<?= $curso['id'] ?>" tabindex="-1" aria-labelledby="editCursoModalLabel" aria-hidden="true">
+        <div class="modal fade" id="editCursoModal<?= $curso['curso_id'] ?>" tabindex="-1" aria-labelledby="editCursoModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form method="POST">
@@ -65,13 +69,13 @@ $cursos = $pdo->query("SELECT * FROM cursos")->fetchAll(PDO::FETCH_ASSOC);
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="hidden" name="id" value="<?= $curso['id'] ?>">
+                            <input type="hidden" name="id" value="<?= $curso['curso_id'] ?>">
                             <div class="form-group">
                                 <label for="nome">Nome</label>
-                                <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($curso['nome']) ?>" required>
+                                <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($curso['curso_nome']) ?>" required>
                             <div class="form-group">
                                 <label for="carga-horaria">Carga Horária</label>
-                                <input type="text" class="form-control" id="carga_horaria" name="carga_horaria" value="<?= htmlspecialchars($curso['carga_horaria']) ?>" required>
+                                <input type="text" class="form-control" id="carga_horaria" name="carga_horaria" value="<?= htmlspecialchars($curso['curso_carga_horaria']) ?>" required>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -84,23 +88,23 @@ $cursos = $pdo->query("SELECT * FROM cursos")->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <!-- Modal Excluir Curso -->
-        <div class="modal fade" id="deleteCursoModal<?= $curso['id'] ?>" tabindex="-1" aria-labelledby="deleteCursoModalLabel" aria-hidden="true">
+        <div class="modal fade" id="deleteCursoModal<?= $curso['curso_id'] ?>" tabindex="-1" aria-labelledby="deleteCursoModalLabel<?= $curso['curso_id'] ?>" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form method="POST">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="deleteCursoModalLabel">Excluir Curso</h5>
+                            <h5 class="modal-title" id="deleteCursoModalLabel<?= $curso['curso_id'] ?>">Desativar Curso</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="hidden" name="id" value="1">
-                            <p>Tem certeza que deseja excluir o curso <strong><?= htmlspecialchars($curso['nome']) ?></strong>?</p>
+                            <input type="hidden" name="id" value="<?= $curso['curso_id'] ?>">
+                            <p>Tem certeza que deseja desativar o curso <strong><?= htmlspecialchars($curso['curso_nome']) ?></strong>?</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-danger" name="delete">Excluir</button>
+                            <button type="submit" class="btn btn-danger" name="delete">Desativar</button>
                         </div>
                     </form>
                 </div>
@@ -128,7 +132,7 @@ $cursos = $pdo->query("SELECT * FROM cursos")->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="form-group">
                         <label for="nome">Carga Horária</label>
-                        <input type="text" class="form-control" id="carga-horaria" name="carga-horaria" required>
+                        <input type="text" class="form-control" id="carga_horaria" name="carga_horaria" required>
                     </div>
                 </div>
                 <div class="modal-footer">

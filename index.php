@@ -4,7 +4,7 @@ include 'header.php';
 
 // Aniversariantes do Mês
 $mes_atual = date('m');
-$aniversariantes = $pdo->query("SELECT nome, data_nascimento FROM alunos WHERE MONTH(data_nascimento) = $mes_atual")->fetchAll(PDO::FETCH_ASSOC);
+$aniversariantes = $pdo->query("SELECT aluno_nome, aluno_data_nascimento FROM alunos WHERE MONTH(aluno_data_nascimento) = $mes_atual")->fetchAll(PDO::FETCH_ASSOC);
 
 // Buscar dados para os gráficos
 $alunos = $pdo->query("SELECT COUNT(*) as total FROM alunos")->fetch(PDO::FETCH_ASSOC);
@@ -28,8 +28,8 @@ $matriculas = $pdo->query("SELECT COUNT(*) as total FROM matriculas")->fetch(PDO
             <tbody>
                 <?php foreach ($aniversariantes as $aniversariante): ?>
                 <tr>
-                    <td><?= $aniversariante['nome'] ?></td>
-                    <td><?= date('d/m/Y', strtotime($aniversariante['data_nascimento'])); ?></td>
+                    <td><?= $aniversariante['aluno_nome'] ?></td>
+                    <td><?= date('d/m/Y', strtotime($aniversariante['aluno_data_nascimento'])); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

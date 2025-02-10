@@ -19,9 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $extensao = "." . $extensao['extension'];
         $foto = $pdo->lastInsertId() . date('YmdHms') . $extensao;
         move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/$foto");
+        $data_cadastro = date('Y-m-d');
+        $hora_cadastro = date('H:m:s');
 
-        $stmt = $pdo->prepare("INSERT INTO alunos (nome,data_nascimento,email,telefone,cep,logradouro,numero,bairro,cidade,uf,foto) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
-        $stmt->execute([$nome, $data_nascimento, $email, $telefone, $cep, $logradouro, $numero, $bairro, $cidade, $uf, $foto]);
+        $stmt = $pdo->prepare("INSERT INTO alunos (aluno_nome,aluno_data_nascimento,aluno_email,aluno_telefone,aluno_cep,aluno_logradouro,aluno_numero,aluno_bairro,aluno_cidade,aluno_uf,aluno_foto,aluno_data_cadastro,aluno_hora_cadastro) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt->execute([$nome, $data_nascimento, $email, $telefone, $cep, $logradouro, $numero, $bairro, $cidade, $uf, $foto, $data_cadastro, $hora_cadastro]);
+        header('Location: alunos.php');
     } elseif (isset($_POST['edit'])) {
         $id = $_POST['id'];
         $nome = $_POST['nome'];
@@ -39,22 +42,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $foto = $pdo->lastInsertId() . date('YmdHms') . $extensao;
 
         if ($foto == "") {
-            $stmt = $pdo->prepare("UPDATE alunos SET nome = ?, data_nascimento = ?, email = ?, telefone = ?,cep = ?, logradouro = ?, numero = ?, bairro = ?, cidade = ?, uf = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE alunos SET aluno_nome = ?, aluno_data_nascimento = ?, aluno_email = ?, aluno_telefone = ?,aluno_cep = ?, aluno_logradouro = ?, aluno_numero = ?, aluno_bairro = ?, aluno_cidade = ?, aluno_uf = ? WHERE aluno_id = ?");
             $stmt->execute([$nome, $data_nascimento, $email, $telefone, $cep, $logradouro, $numero, $bairro, $cidade, $uf, $id]);
             unlink($foto);
+            header('Location: alunos.php');
         } else {
             move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/$foto");
-            $stmt = $pdo->prepare("UPDATE alunos SET nome = ?, data_nascimento = ?, email = ?, telefone = ?, cep = ?, logradouro = ?, numero = ?, bairro = ?, cidade = ?, uf = ?, foto = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE alunos SET aluno_nome = ?, aluno_data_nascimento = ?, aluno_email = ?, aluno_telefone = ?, aluno_cep = ?, aluno_logradouro = ?, aluno_numero = ?, aluno_bairro = ?, aluno_cidade = ?, aluno_uf = ?, aluno_foto = ? WHERE aluno_id = ?");
             $stmt->execute([$nome, $data_nascimento, $email, $telefone, $cep, $logradouro, $numero, $bairro, $cidade, $uf, $foto, $id]);
+            header('Location: alunos.php');
         }
     } elseif (isset($_POST['delete'])) {
         $id = $_POST['id'];
-        $stmt = $pdo->prepare("UPDATE alunos SET estado = '0' WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE alunos SET aluno_status = '0' WHERE aluno_id = ?");
         $stmt->execute([$id]);
+        header('Location: alunos.php');
     }
 }
 
-$alunos = $pdo->query("SELECT * FROM alunos WHERE estado = '1'")->fetchAll(PDO::FETCH_ASSOC);
+$alunos = $pdo->query("SELECT * FROM alunos WHERE aluno_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <h2>Alunos</h2>
@@ -73,72 +79,72 @@ $alunos = $pdo->query("SELECT * FROM alunos WHERE estado = '1'")->fetchAll(PDO::
     <tbody>
         <?php foreach ($alunos as $aluno): ?>
             <tr>
-                <td><?= $aluno['id'] ?></td>
-                <td><?= $aluno['nome'] ?></td>
-                <td><img src="uploads/<?= $aluno['foto'] ?>" width="50"></td>
-                <td><?= date('d/m/Y', strtotime($aluno['data_nascimento'])); ?></td>
+                <td><?= $aluno['aluno_id'] ?></td>
+                <td><?= $aluno['aluno_nome'] ?></td>
+                <td><img src="uploads/<?= $aluno['aluno_foto'] ?>" width="50"></td>
+                <td><?= date('d/m/Y', strtotime($aluno['aluno_data_nascimento'])); ?></td>
                 <td>
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editAlunoModal<?= $aluno['id'] ?>">Editar</button>
-                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAlunoModal<?= $aluno['id'] ?>">Desativar</button>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editAlunoModal<?= $aluno['aluno_id'] ?>">Editar</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAlunoModal<?= $aluno['aluno_id'] ?>">Desativar</button>
                 </td>
             </tr>
 
             <!-- Modal Editar Aluno -->
-            <div class="modal fade" id="editAlunoModal<?= $aluno['id'] ?>" tabindex="-1" aria-labelledby="editAlunoModalLabel<?= $aluno['id'] ?>" aria-hidden="true">
+            <div class="modal fade" id="editAlunoModal<?= $aluno['aluno_id'] ?>" tabindex="-1" aria-labelledby="editAlunoModalLabel<?= $aluno['aluno_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST" enctype="multipart/form-data">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editAlunoModalLabel<?= $aluno['id'] ?>">Editar Aluno</h5>
+                                <h5 class="modal-title" id="editAlunoModalLabel<?= $aluno['aluno_id'] ?>">Editar Aluno</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
+                                <input type="hidden" name="id" value="<?= $aluno['aluno_id'] ?>">
                                 <div class="form-group">
                                     <label for="nome">Nome</label>
-                                    <input type="text" class="form-control" id="nome" name="nome" value="<?= $aluno['nome'] ?>" required>
+                                    <input type="text" class="form-control" id="nome" name="nome" value="<?= $aluno['aluno_nome'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="data_nascimento">Data de Nascimento</label>
-                                    <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="<?= $aluno['data_nascimento'] ?>" required>
+                                    <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="<?= $aluno['aluno_data_nascimento'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="email">E-mail</label>
-                                    <input type="email" class="form-control" id="email" name="email" value="<?= $aluno['email'] ?>" required>
+                                    <input type="email" class="form-control" id="email" name="email" value="<?= $aluno['aluno_email'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="telefone">Telefone</label>
-                                    <input type="text" class="form-control" id="telefone" name="telefone" value="<?= $aluno['telefone'] ?>" required>
+                                    <input type="text" class="form-control" id="telefone" name="telefone" value="<?= $aluno['aluno_telefone'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="cep">CEP</label>
-                                    <input type="text" class="form-control" id="cep" name="cep" size="10" maxlength="9" value="<?= $aluno['cep'] ?>" required>
+                                    <input type="text" class="form-control" id="cep" name="cep" size="10" maxlength="9" value="<?= $aluno['aluno_cep'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="endereco">Logradouro</label>
-                                    <input type="text" class="form-control" id="logradouro" name="logradouro" value="<?= $aluno['logradouro'] ?>" required>
+                                    <input type="text" class="form-control" id="logradouro" name="logradouro" value="<?= $aluno['aluno_logradouro'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="numero">Número</label>
-                                    <input type="text" class="form-control" id="numero" name="numero" value="<?= $aluno['numero'] ?>" required>
+                                    <input type="text" class="form-control" id="numero" name="numero" value="<?= $aluno['aluno_numero'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="bairro">Bairro</label>
-                                    <input type="text" class="form-control" id="bairro" name="bairro" value="<?= $aluno['bairro'] ?>" required>
+                                    <input type="text" class="form-control" id="bairro" name="bairro" value="<?= $aluno['aluno_bairro'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="cidade">Cidade</label>
-                                    <input type="text" class="form-control" id="cidade" name="cidade" value="<?= $aluno['cidade'] ?>" required>
+                                    <input type="text" class="form-control" id="cidade" name="cidade" value="<?= $aluno['aluno_cidade'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="uf">UF</label>
-                                    <input type="text" class="form-control" id="uf" name="uf" value="<?= $aluno['uf'] ?>" required>
+                                    <input type="text" class="form-control" id="uf" name="uf" value="<?= $aluno['aluno_uf'] ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="foto">Foto</label>
-                                    <input type="file" class="form-control" id="foto" name="foto">
+                                    <input type="file" class="form-control" id="foto" name="foto" value="<?= $aluno['aluno_foto'] ?>" />
                                     <small>Deixe em branco para manter a foto atual.</small>
                                 </div>
 
@@ -153,23 +159,23 @@ $alunos = $pdo->query("SELECT * FROM alunos WHERE estado = '1'")->fetchAll(PDO::
             </div>
 
             <!-- Modal Excluir Aluno -->
-            <div class="modal fade" id="deleteAlunoModal<?= $aluno['id'] ?>" tabindex="-1" aria-labelledby="deleteAlunoModalLabel<?= $aluno['id'] ?>" aria-hidden="true">
+            <div class="modal fade" id="deleteAlunoModal<?= $aluno['aluno_id'] ?>" tabindex="-1" aria-labelledby="deleteAlunoModalLabel<?= $aluno['aluno_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteAlunoModalLabel<?= $aluno['id'] ?>">Excluir Aluno</h5>
+                                <h5 class="modal-title" id="deleteAlunoModalLabel<?= $aluno['aluno_id'] ?>">Desativar Aluno</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <p>Você tem certeza que deseja excluir o aluno <strong><?= $aluno['nome'] ?></strong>?</p>
-                                <input type="hidden" name="id" value="<?= $aluno['id'] ?>">
+                                <p>Você tem certeza que deseja excluir o aluno <strong><?= $aluno['aluno_nome'] ?></strong>?</p>
+                                <input type="hidden" name="id" value="<?= $aluno['aluno_id'] ?>">
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-danger" name="delete">Excluir</button>
+                                <button type="submit" class="btn btn-danger" name="delete">Desativar</button>
                             </div>
                         </form>
                     </div>

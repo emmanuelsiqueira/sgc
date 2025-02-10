@@ -33,6 +33,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="turmas.php">Turmas</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="horarios.php">Horários</a>
+                </li>
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">

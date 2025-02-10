@@ -5,64 +5,63 @@ include 'header.php';
 // CRUD para Alunos
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['add'])) {
-        $nome = $_POST['nome'];
-        $curso_id = $_POST['curso_id'];
-        $professor_id = $_POST['professor_id'];
-        $data_inicio = $_POST['data_inicio'];
-        $data_fim = $_POST['data_fim'];
-        $data_fim = $_POST['data_fim'];
+        $horario_id = $_POST['horario_id'];
+        $dia_semana = $_POST['dia_semana'];
+        $hora_inicio = $_POST['hora_inicio'];
+        $hora_fim = $_POST['hora_fim'];
         $data_cadastro = date('Y-m-d');
         $hora_cadastro = date('H:m:s');
 
-        $stmt = $pdo->prepare("INSERT INTO turmas (turma_nome,turma_curso_id,turma_professor_id,turma_data_inicio,turma_data_fim,turma_data_cadastro,turma_hora_cadastro) VALUES (?,?,?,?,?,?,?)");
-        $stmt->execute([$nome, $curso_id, $professor_id, $data_inicio, $data_fim, $data_cadastro, $hora_cadastro]);
-        header('Location: turmas.php');
+        $stmt = $pdo->prepare("INSERT INTO horarios (horario_turma_id,horario_dia_semana, horario_hora_inicio, horario_hora_fim, horario_data_cadastro,horario_hora_cadastro) VALUES (?,?,?,?,?,?)");
+        $stmt->execute([$horario_id, $dia_semana, $hora_inicio, $hora_fim, $data_cadastro, $hora_cadastro]);
+        header('Location: horarios.php');
     } elseif (isset($_POST['edit'])) {
         $id = $_POST['id'];
-        $nome = $_POST['nome'];
-        $curso_id = $_POST['curso_id'];
-        $professor_id = $_POST['professor_id'];
-        $data_inicio = $_POST['data_inicio'];
-        $data_fim = $_POST['data_fim'];
-        $stmt = $pdo->prepare("UPDATE turmas SET turma_nome = ?, turma_curso_id = ?, turma_professor_id = ?, turma_data_inicio = ?, turma_data_fim = ? WHERE turma_id = ?");
-        $stmt->execute([$nome, $curso_id, $professor_id, $data_inicio, $data_fim, $id]);
-        header('Location: turmas.php');
+        $horario_turma_id = $_POST['horario_turma_id'];
+        $dia_semana = $_POST['dia_semana'];
+        $hora_inicio = $_POST['hora_inicio'];
+        $hora_fim = $_POST['hora_fim'];
+        $stmt = $pdo->prepare("UPDATE horarios SET horario_id = ?, horario_turma_id = ?, horario_dia_semana = ?, horario_hora_inicio = ?, horario_hora_fim = ? WHERE horario__id = ?");
+        $stmt->execute([$id, $horario_turma_id, $dia_semana, $hora_inicio, $hora_fim]);
+        header('Location: horarios.php');
     } elseif (isset($_POST['delete'])) {
         $id = $_POST['id'];
-        $stmt = $pdo->prepare("UPDATE turmas SET turma_status = '0' WHERE turma_id = ?");
+        $stmt = $pdo->prepare("UPDATE horarios SET horario_status = '0' WHERE horario_id = ?");
         $stmt->execute([$id]);
-        header('Location: turmas.php');
+        header('Location: horarios.php');
     }
 }
 
-$turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_nome,turma_data_inicio,turma_data_fim FROM turmas INNER JOIN cursos ON turmas.turma_curso_id = cursos.curso_id INNER JOIN professores ON turmas.turma_professor_id = professores.professor_id WHERE turma_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
+$horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curso_nome, professor_id, professor_nome, horario_hora_inicio, horario_hora_fim, horario_status FROM horarios INNER JOIN turmas ON horarios.horario_turma_id = turmas.turma_id INNER JOIN cursos ON horarios.horario_turma_id = cursos.curso_id INNER JOIN professores ON horarios.horario_turma_id = professores.professor_id WHERE horario_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2>Turmas</h2>
-<button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addTurmaModal">Adicionar Turma</button>
+<h2>Horários</h2>
+<button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addHorarioModal">Adicionar Horário</button>
 
 <table id="example" class="table table-striped table-bordered">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Nome</th>
+            <th>Turma</th>
             <th>Curso</th>
             <th>Professor</th>
-            <th>Data Inicial</th>
-            <th>Data Final</th>
+            <th>Dia da semana</th>
+            <th>Hora Inicial</th>
+            <th>Hora Final</th>
             <th>Ações</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($turmas as $turma): ?>
+        <?php foreach ($horarios as $horario): ?>
             <tr>
-                <td><?= $turma['turma_id'] ?></td>
-                <td><?= $turma['turma_nome'] ?></td>
-                <td><?= $turma['curso_nome'] ?></td>
-                <td><?= $turma['professor_nome'] ?></td>
-
-                <td><?= date('d/m/Y', strtotime($turma['turma_data_inicio'])); ?></td>
-                <td><?= date('d/m/Y', strtotime($turma['turma_data_fim'])); ?></td>
+                <td><?= $horario['horario_id'] ?></td>
+                <td><?= $horario['turma_nome'] ?></td>
+                <td><?= $horario['curso_nome'] ?></td>
+                <td><?= $horario['professor_nome'] ?></td>
+                <td><?= $horario['horario_dia_semana'] ?></td>
+                <td><?= $horario['horario_hora_inicio'] ?></td>
+                <td><?= date('H:m:s', strtotime($horario['horario_hora_inicial'])) ?></td>
+                <td><?= date('H:m:s', strtotime($horario['horario_hora_fim'])) ?></td>
                 <td>
                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editTurmaModal<?= $turma['turma_id'] ?>">Editar</button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTurmaModal<?= $turma['turma_id'] ?>">Desativar</button>
@@ -70,18 +69,18 @@ $turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_
             </tr>
 
             <!-- Modal Editar Aluno -->
-            <div class="modal fade" id="editTurmaModal<?= $turma['turma_id'] ?>" tabindex="-1" aria-labelledby="editTurmaModalLabel<?= $turma['turma_id'] ?>" aria-hidden="true">
+            <div class="modal fade" id="editTurmaModal<?= $horarios['horario_id'] ?>" tabindex="-1" aria-labelledby="editTurmaModalLabel<?= $horarios['horario_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST" enctype="multipart/form-data">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editTurmaModalLabel<?= $turma['turma_id'] ?>">Editar Turma</h5>
+                                <h5 class="modal-title" id="editTurmaModalLabel<?= $horarios['horario_id'] ?>">Editar Horário</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <input type="hidden" name="id" value="<?= $turma['turma_id'] ?>">
+                                <input type="hidden" name="id" value="<?= $horarios['horario_id'] ?>">
                                 <div class="form-group">
                                     <label for="nome">Nome</label>
                                     <input type="text" class="form-control" id="nome" name="nome" value="<?= $turma['turma_nome'] ?>" required>
@@ -159,19 +158,19 @@ $turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_
             </div>
 
             <!-- Modal Excluir Aluno -->
-            <div class="modal fade" id="deleteTurmaModal<?= $turma['turma_id'] ?>" tabindex="-1" aria-labelledby="deleteTurmaModalLabel<?= $turma['turma_id'] ?>" aria-hidden="true">
+            <div class="modal fade" id="deleteHorarioModal<?= $horarios['horario_id'] ?>" tabindex="-1" aria-labelledby="deleteHorarioModalLabel<?= $horarios['horario_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteTurmaModalLabel<?= $turma['turma_id'] ?>">Desativar Turma</h5>
+                                <h5 class="modal-title" id="deleteHorarioModalLabel<?= $horarios['horario_id'] ?>">Desativar Horário</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <p>Você tem certeza que deseja desativar a turma <strong><?= $turma['turma_nome'] ?></strong>?</p>
-                                <input type="hidden" name="id" value="<?= $turma['turma_id'] ?>">
+                                <p>Você tem certeza que deseja desativar o horário <strong><?= $horarios['horario_id'] ?></strong>?</p>
+                                <input type="hidden" name="id" value="<?= $horarios['horario_id'] ?>">
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -188,12 +187,12 @@ $turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_
 
 
 <!-- Modal Adicionar Aluno -->
-<div class="modal fade" id="addTurmaModal" tabindex="-1" aria-labelledby="addTurmaModalLabel" aria-hidden="true">
+<div class="modal fade" id="addHorarioModal" tabindex="-1" aria-labelledby="addHorarioModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addTurmaModalLabel">Adicionar Turma</h5>
+                    <h5 class="modal-title" id="addHorarioModalLabel">Adicionar Horário</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -201,22 +200,16 @@ $turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_
                 <div class="modal-body">
 
                     <div class="form-group">
-                        <label for="nome">Nome</label>
-                        <input type="text" class="form-control" id="nome" name="nome" required>
-                    </div>
 
-                    <div class="form-group">
-
-                        <label for="curso_id">Curso</label>
-
-                        <select class="form-control select2" name="curso_id" id="curso_id" required>
-                            <option value="">-- Selecione um curso --</option>
+                        <label for="horario_turma_id">Turma</label>
+                        <select class="form-control select2" name="horario_turma_id" id="horario_turma_id" required>
+                            <option value="">-- Selecione uma turma --</option>
                             <?php
                             // Verifica se há registros
-                            if (!empty($turmas)) {
+                            if (!empty($horarios)) {
                                 // Itera sobre os registros e cria as opções
-                                foreach ($turmas as $turma) {
-                                    echo "<option value='{$turma['curso_id']}'>{$turma['curso_nome']}</option>";
+                                foreach ($horarios as $horario) {
+                                    echo "<option value='{$horario['horario_turma_id']}'>{$horario['turma_nome']}</option>";
                                 }
                             } else {
                                 // Se não houver registros, exibe uma opção padrão
@@ -227,35 +220,26 @@ $turmas = $pdo->query("SELECT turma_id,turma_nome,curso_id,curso_nome,professor_
                     </div>
 
                     <div class="form-group">
-
-                        <label for="professor_id">Professor</label>
-
-                        <select class="form-control" name="professor_id" id="professor_id" required>
-                            <option value="">-- Selecione um professor --</option>
-                            <?php
-                            // Verifica se há registros
-                            if (!empty($turmas)) {
-                                // Itera sobre os registros e cria as opções
-                                foreach ($turmas as $turma) {
-                                    echo "<option value='{$turma['professor_id']}'>{$turma['professor_nome']}</option>";
-                                }
-                            } else {
-                                // Se não houver registros, exibe uma opção padrão
-                                echo "<option value=''>Nenhum registro encontrado</option>";
-                            }
-                            ?>
+                        <label for="dia_semana">Dia da semana</label>
+                        <select class="form-control select2" name="dia_semana" id="dia_semana" required>
+                        <option value="SEGUNDA-FEIRA">SEGUNDA-FEIRA</option>
+                        <option value="TERÇA-FEIRA">TERÇA-FEIRA</option>
+                        <option value="QUARTA-FEIRA">QUARTA-FEIRA</option>
+                        <option value="QUINTA-FEIRA">QUINTA-FEIRA</option>
+                        <option value="SEXTA-FEIRA">SEXTA-FEIRA</option>
+                        <option value="SÁBADO">SÁBADO</option>
+                        <option value="DOMINGO">DOMINGO</option>
                         </select>
                     </div>
-
-
-
+                    
                     <div class="form-group">
-                        <label for="data_inicio">Data inicial</label>
-                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
+                        <label for="hora_inicial">Hora inicial</label>
+                        <input type="time" class="form-control" id="hora_inicial" name="hora_inicial" required>
                     </div>
+                  
                     <div class="form-group">
-                        <label for="data_fim">Data final</label>
-                        <input type="date" class="form-control" id="data_fim" name="data_fim" required>
+                        <label for="hora_fim">Hora inicial</label>
+                        <input type="time" class="form-control" id="hora_fim" name="hora_fim" required>
                     </div>
 
                 </div>

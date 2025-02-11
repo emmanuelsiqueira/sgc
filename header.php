@@ -24,9 +24,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="cursos.php">Cursos</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="matriculas.php">Matrículas</a>
-                </li>
+               
                 <li class="nav-item">
                     <a class="nav-link" href="professores.php">Professores</a>
                 </li>
@@ -35,6 +33,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="horarios.php">Horários</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="matriculas.php">Matrículas</a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">

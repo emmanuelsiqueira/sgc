@@ -5,24 +5,24 @@ include 'header.php';
 // CRUD para Alunos
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['add'])) {
-        $horario_id = $_POST['horario_id'];
+        $turma_id = $_POST['turma_id'];
         $dia_semana = $_POST['dia_semana'];
         $hora_inicio = $_POST['hora_inicio'];
         $hora_fim = $_POST['hora_fim'];
         $data_cadastro = date('Y-m-d');
         $hora_cadastro = date('H:m:s');
 
-        $stmt = $pdo->prepare("INSERT INTO horarios (horario_turma_id,horario_dia_semana, horario_hora_inicio, horario_hora_fim, horario_data_cadastro,horario_hora_cadastro) VALUES (?,?,?,?,?,?)");
-        $stmt->execute([$horario_id, $dia_semana, $hora_inicio, $hora_fim, $data_cadastro, $hora_cadastro]);
+        $stmt = $pdo->prepare("INSERT INTO horarios (horario_turma_id, horario_dia_semana, horario_hora_inicio, horario_hora_fim, horario_data_cadastro, horario_hora_cadastro) VALUES (?,?,?,?,?,?)");
+        $stmt->execute([$turma_id, $dia_semana, $hora_inicio, $hora_fim, $data_cadastro, $hora_cadastro]);
         header('Location: horarios.php');
     } elseif (isset($_POST['edit'])) {
         $id = $_POST['id'];
-        $horario_turma_id = $_POST['horario_turma_id'];
+        $turma_id = $_POST['turma_id'];
         $dia_semana = $_POST['dia_semana'];
         $hora_inicio = $_POST['hora_inicio'];
         $hora_fim = $_POST['hora_fim'];
-        $stmt = $pdo->prepare("UPDATE horarios SET horario_id = ?, horario_turma_id = ?, horario_dia_semana = ?, horario_hora_inicio = ?, horario_hora_fim = ? WHERE horario__id = ?");
-        $stmt->execute([$id, $horario_turma_id, $dia_semana, $hora_inicio, $hora_fim]);
+        $stmt = $pdo->prepare("UPDATE horarios SET horario_turma_id = ?, horario_dia_semana = ?, horario_hora_inicio = ?, horario_hora_fim = ? WHERE horario_id = ?");
+        $stmt->execute([$turma_id, $dia_semana, $hora_inicio, $hora_fim, $id]);
         header('Location: horarios.php');
     } elseif (isset($_POST['delete'])) {
         $id = $_POST['id'];
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-$horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curso_nome, professor_id, professor_nome, horario_hora_inicio, horario_hora_fim, horario_status FROM horarios INNER JOIN turmas ON horarios.horario_turma_id = turmas.turma_id INNER JOIN cursos ON horarios.horario_turma_id = cursos.curso_id INNER JOIN professores ON horarios.horario_turma_id = professores.professor_id WHERE horario_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
+$horarios = $pdo->query("SELECT h.horario_id, h.horario_turma_id, t.turma_nome, c.curso_nome, p.professor_nome, h.horario_dia_semana, h.horario_hora_inicio, h.horario_hora_fim FROM horarios h JOIN turmas t ON h.horario_turma_id = t.turma_id JOIN cursos c ON t.turma_curso_id = c.curso_id JOIN professores p ON c.curso_id = p.professor_id WHERE h.horario_status = '1'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <h2>Horários</h2>
@@ -59,50 +59,48 @@ $horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curs
                 <td><?= $horario['curso_nome'] ?></td>
                 <td><?= $horario['professor_nome'] ?></td>
                 <td><?= $horario['horario_dia_semana'] ?></td>
-                <td><?= $horario['horario_hora_inicio'] ?></td>
-                <td><?= date('H:m:s', strtotime($horario['horario_hora_inicial'])) ?></td>
+                <td><?= date('H:m:s', strtotime($horario['horario_hora_inicio'])) ?></td>
                 <td><?= date('H:m:s', strtotime($horario['horario_hora_fim'])) ?></td>
                 <td>
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editTurmaModal<?= $turma['turma_id'] ?>">Editar</button>
-                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTurmaModal<?= $turma['turma_id'] ?>">Desativar</button>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editHorarioModal<?= $horario['horario_id'] ?>">Editar</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteHorarioModal<?= $horario['horario_id'] ?>">Desativar</button>
                 </td>
             </tr>
 
-            <!-- Modal Editar Aluno -->
-            <div class="modal fade" id="editTurmaModal<?= $horarios['horario_id'] ?>" tabindex="-1" aria-labelledby="editTurmaModalLabel<?= $horarios['horario_id'] ?>" aria-hidden="true">
+            <!-- Modal Editar Horário -->
+            <div class="modal fade" id="editHorarioModal<?= $horario['horario_id'] ?>" tabindex="-1" aria-labelledby="editHorarioModalLabel<?= $horario['horario_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST" enctype="multipart/form-data">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editTurmaModalLabel<?= $horarios['horario_id'] ?>">Editar Horário</h5>
+                                <h5 class="modal-title" id="editHorarioModalLabel<?= $horario['horario_id'] ?>">Editar Horário</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <input type="hidden" name="id" value="<?= $horarios['horario_id'] ?>">
+                                <input type="hidden" name="id" value="<?= $horario['horario_id'] ?>">
+
                                 <div class="form-group">
-                                    <label for="nome">Nome</label>
-                                    <input type="text" class="form-control" id="nome" name="nome" value="<?= $turma['turma_nome'] ?>" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="curso_id">Curso</label>
-                                    <select class="form-control select2" name="curso_id" id="curso_id" required>
+                                    <label for="horario_turma_id">Turma</label>
+
+                                    <select class="form-control select2" name="turma_id" id="turma_id" required>
+                                        <option value="">-- Selecione uma turma --</option>
                                         <?php
                                         // Consulta para buscar os registros da tabela
-                                        
-                                        $sqlCursos = "SELECT * FROM cursos";
-                                        $stmtCursos = $pdo->prepare($sqlCursos);
-                                        $stmtCursos->execute();
+
+                                        $sqlTurmas = "SELECT * FROM turmas INNER JOIN cursos ON turmas.turma_curso_id = cursos.curso_id";
+                                        $stmtTurmas = $pdo->prepare($sqlTurmas);
+                                        $stmtTurmas->execute();
 
                                         // Busca todos os registros como um array associativo
-                                        $Cursos = $stmtCursos->fetchAll(PDO::FETCH_ASSOC);
+                                        $Turmas = $stmtTurmas->fetchAll(PDO::FETCH_ASSOC);
 
                                         // Verifica se há registros
-                                        if (!empty($Cursos)) {
+                                        if (!empty($Turmas)) {
                                             // Itera sobre os registros e cria as opções
-                                            foreach ($Cursos as $Curso) {
-                                                echo "<option value='{$Curso['curso_id']}'>{$Curso['curso_nome']}</option>";
+                                            foreach ($Turmas as $Turma) {
+                                                echo "<option value='{$Turma['turma_id']}'>{$Turma['turma_nome']} - {$Turma['curso_nome']}</option>";
                                             }
                                         } else {
                                             // Se não houver registros, exibe uma opção padrão
@@ -111,39 +109,27 @@ $horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curs
                                         ?>
                                     </select>
                                 </div>
+
                                 <div class="form-group">
-                                    <label for="professor_id">Professor</label>
-                                    <select class="form-control select2" name="professor_id" id="professor_id" required>
-                                    <?php
-                                        // Consulta para buscar os registros da tabela
-                                        $sqlProfessores = "SELECT * FROM professores";
-                                        $stmtProfessores = $pdo->prepare($sqlProfessores);
-                                        $stmtProfessores->execute();
-
-                                        // Busca todos os registros como um array associativo
-                                        $Professores = $stmtProfessores->fetchAll(PDO::FETCH_ASSOC);
-
-                                        // Verifica se há registros
-                                        if (!empty($Professores)) {
-                                            // Itera sobre os registros e cria as opções
-                                            foreach ($Professores as $Professor) {
-                                                echo "<option value='{$Professor['professor_id']}'>{$Professor['professor_nome']}</option>";
-                                            }
-                                        } else {
-                                            // Se não houver registros, exibe uma opção padrão
-                                            echo "<option value=''>Nenhum registro encontrado</option>";
-                                        }
-                                        ?>
-                
+                                    <label for="dia_semana">Dia da semana</label>
+                                    <select class="form-control select2" name="dia_semana" id="dia_semana" required>
+                                        <option value="SEGUNDA-FEIRA">SEGUNDA-FEIRA</option>
+                                        <option value="TERÇA-FEIRA">TERÇA-FEIRA</option>
+                                        <option value="QUARTA-FEIRA">QUARTA-FEIRA</option>
+                                        <option value="QUINTA-FEIRA">QUINTA-FEIRA</option>
+                                        <option value="SEXTA-FEIRA">SEXTA-FEIRA</option>
+                                        <option value="SÁBADO">SÁBADO</option>
+                                        <option value="DOMINGO">DOMINGO</option>
                                     </select>
                                 </div>
+
                                 <div class="form-group">
-                                    <label for="data_inicio">Data inicial</label>
-                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="<?= $turma['turma_data_inicio'] ?>" required>
+                                    <label for="hora_inicio">Hora inicial</label>
+                                    <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" value="<?= $horario['horario_hora_inicio'] ?>" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="data_fim">Data final</label>
-                                    <input type="date" class="form-control" id="data_fim" name="data_fim" value="<?= $turma['turma_data_fim'] ?>" required>
+                                    <label for="hora_fim">Hora final</label>
+                                    <input type="time" class="form-control" id="hora_fim" name="hora_fim" value="<?= $horario['horario_hora_fim'] ?>" required>
                                 </div>
 
 
@@ -158,19 +144,19 @@ $horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curs
             </div>
 
             <!-- Modal Excluir Aluno -->
-            <div class="modal fade" id="deleteHorarioModal<?= $horarios['horario_id'] ?>" tabindex="-1" aria-labelledby="deleteHorarioModalLabel<?= $horarios['horario_id'] ?>" aria-hidden="true">
+            <div class="modal fade" id="deleteHorarioModal<?= $horario['horario_id'] ?>" tabindex="-1" aria-labelledby="deleteHorarioModalLabel<?= $horario['horario_id'] ?>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="POST">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteHorarioModalLabel<?= $horarios['horario_id'] ?>">Desativar Horário</h5>
+                                <h5 class="modal-title" id="deleteHorarioModalLabel<?= $horario['horario_id'] ?>">Desativar Horário</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <p>Você tem certeza que deseja desativar o horário <strong><?= $horarios['horario_id'] ?></strong>?</p>
-                                <input type="hidden" name="id" value="<?= $horarios['horario_id'] ?>">
+                                <p>Você tem certeza que deseja desativar o horário <strong><?= $horario['horario_id'] ?></strong>?</p>
+                                <input type="hidden" name="id" value="<?= $horario['horario_id'] ?>">
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -200,16 +186,25 @@ $horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curs
                 <div class="modal-body">
 
                     <div class="form-group">
-
                         <label for="horario_turma_id">Turma</label>
-                        <select class="form-control select2" name="horario_turma_id" id="horario_turma_id" required>
+
+                        <select class="form-control select2" name="turma_id" id="turma_id" required>
                             <option value="">-- Selecione uma turma --</option>
                             <?php
+                            // Consulta para buscar os registros da tabela
+
+                            $sqlTurmas = "SELECT * FROM turmas INNER JOIN cursos ON turmas.turma_curso_id = cursos.curso_id";
+                            $stmtTurmas = $pdo->prepare($sqlTurmas);
+                            $stmtTurmas->execute();
+
+                            // Busca todos os registros como um array associativo
+                            $Turmas = $stmtTurmas->fetchAll(PDO::FETCH_ASSOC);
+
                             // Verifica se há registros
-                            if (!empty($horarios)) {
+                            if (!empty($Turmas)) {
                                 // Itera sobre os registros e cria as opções
-                                foreach ($horarios as $horario) {
-                                    echo "<option value='{$horario['horario_turma_id']}'>{$horario['turma_nome']}</option>";
+                                foreach ($Turmas as $Turma) {
+                                    echo "<option value='{$Turma['turma_id']}'>{$Turma['turma_nome']} - {$Turma['curso_nome']}</option>";
                                 }
                             } else {
                                 // Se não houver registros, exibe uma opção padrão
@@ -222,21 +217,21 @@ $horarios = $pdo->query("SELECT horario_id, turma_id, turma_nome, curso_id, curs
                     <div class="form-group">
                         <label for="dia_semana">Dia da semana</label>
                         <select class="form-control select2" name="dia_semana" id="dia_semana" required>
-                        <option value="SEGUNDA-FEIRA">SEGUNDA-FEIRA</option>
-                        <option value="TERÇA-FEIRA">TERÇA-FEIRA</option>
-                        <option value="QUARTA-FEIRA">QUARTA-FEIRA</option>
-                        <option value="QUINTA-FEIRA">QUINTA-FEIRA</option>
-                        <option value="SEXTA-FEIRA">SEXTA-FEIRA</option>
-                        <option value="SÁBADO">SÁBADO</option>
-                        <option value="DOMINGO">DOMINGO</option>
+                            <option value="SEGUNDA-FEIRA">SEGUNDA-FEIRA</option>
+                            <option value="TERÇA-FEIRA">TERÇA-FEIRA</option>
+                            <option value="QUARTA-FEIRA">QUARTA-FEIRA</option>
+                            <option value="QUINTA-FEIRA">QUINTA-FEIRA</option>
+                            <option value="SEXTA-FEIRA">SEXTA-FEIRA</option>
+                            <option value="SÁBADO">SÁBADO</option>
+                            <option value="DOMINGO">DOMINGO</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="hora_inicial">Hora inicial</label>
-                        <input type="time" class="form-control" id="hora_inicial" name="hora_inicial" required>
+                        <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" required>
                     </div>
-                  
+
                     <div class="form-group">
                         <label for="hora_fim">Hora inicial</label>
                         <input type="time" class="form-control" id="hora_fim" name="hora_fim" required>

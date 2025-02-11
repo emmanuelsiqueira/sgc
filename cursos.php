@@ -2,6 +2,14 @@
 include 'db.php';
 include 'header.php';
 
+/*
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: index.php");
+    exit;
+}
+*/
+
 // CRUD para Cursos
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['add'])) {

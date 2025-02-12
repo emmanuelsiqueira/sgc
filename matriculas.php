@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-$matriculas = $pdo->query("SELECT m.matricula_id, a.aluno_nome, t.turma_nome, m.matricula_status, m.matricula_data FROM matriculas m JOIN alunos a ON m.matricula_aluno_id = a.aluno_id JOIN turmas t ON m.matricula_turma_id = t.turma_id WHERE m.matricula_status = 'ATIVA'")->fetchAll(PDO::FETCH_ASSOC);
+$matriculas = $pdo->query("SELECT m.matricula_id, a.aluno_foto, a.aluno_nome, t.turma_nome, m.matricula_status, m.matricula_data FROM matriculas m JOIN alunos a ON m.matricula_aluno_id = a.aluno_id JOIN turmas t ON m.matricula_turma_id = t.turma_id WHERE m.matricula_status = 'ATIVA'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <h2>Matrículas</h2>
@@ -47,6 +47,7 @@ $matriculas = $pdo->query("SELECT m.matricula_id, a.aluno_nome, t.turma_nome, m.
     <thead>
         <tr>
             <th>ID</th>
+            <th>Foto</th>
             <th>Aluno</th>
             <th>Turma</th>
             <th>Status</th>
@@ -58,6 +59,7 @@ $matriculas = $pdo->query("SELECT m.matricula_id, a.aluno_nome, t.turma_nome, m.
         <?php foreach ($matriculas as $matricula): ?>
             <tr>
                 <td><?= $matricula['matricula_id'] ?></td>
+                <td><img class="img-fluid" src="uploads/<?= $matricula['aluno_foto'] ?>" width="80"></td>
                 <td><?= $matricula['aluno_nome'] ?></td>
                 <td><?= $matricula['turma_nome'] ?></td>
                 <td><?= $matricula['matricula_status'] ?></td>

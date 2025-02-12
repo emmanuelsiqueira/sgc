@@ -1,13 +1,16 @@
 <?php
 
 session_start();
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: index.php");
-    exit;
-}
 
 include 'db.php';
 include 'header.php';
+
+if ($_SESSION['usuario_id'] == '' || $_SESSION['usuario_status'] == 0) {
+    unset($_SESSION['usuario_id']);
+    unset($_SESSION['usuario_status']);
+    header("location: index.php");
+  } else {
+  }
 
 // Aniversariantes do Mês
 $mes_atual = date('m');

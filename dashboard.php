@@ -27,7 +27,7 @@ $matriculas = $pdo->query("SELECT COUNT(*) as total FROM matriculas")->fetch(PDO
 
 <div class="row">
     <div class="col-md-6">
-        <h4>Aniversariantes do Mês</h4>
+        <h4>Aniversariantes do Mês 🎉</h4>
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -46,7 +46,7 @@ $matriculas = $pdo->query("SELECT COUNT(*) as total FROM matriculas")->fetch(PDO
         </table>
     </div>
     <div class="col-md-6">
-        <h4>Gráficos</h4>
+        <h4>Gráficos 📊</h4>
         <canvas id="myChart"></canvas>
     </div>
 </div>

@@ -1,7 +1,11 @@
 <?php
+
+//$host = 'ec2-54-227-63-115.compute-1.amazonaws.com';
 $host = 'localhost';
 $db = 'sgc';
+//$user = 'nerdghost';
 $user = 'root';
+//$pass = 'Apropos742@#$';
 $pass = '';
 
 try {
